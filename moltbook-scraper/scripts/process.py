@@ -76,7 +76,10 @@ def _build_bip39_recognizer():  # noqa: ANN202
             pass
 
         def analyze(
-            self, text: str, entities: list[str], nlp_artifacts=None  # noqa: ANN001
+            self,
+            text: str,
+            entities: list[str],
+            nlp_artifacts=None,  # noqa: ANN001
         ) -> list[RecognizerResult]:
             results: list[RecognizerResult] = []
             words = text.lower().split()
@@ -165,7 +168,11 @@ def _worker_init(blocklist_file: str | None) -> None:
 
     _ft_mod.np.array = _patched_array  # type: ignore[attr-defined]
 
-    _ft_model = fasttext.load_model(hf_hub_download(repo_id="facebook/fasttext-language-identification", filename="model.bin"))
+    _ft_model = fasttext.load_model(
+        hf_hub_download(
+            repo_id="facebook/fasttext-language-identification", filename="model.bin"
+        )
+    )
 
     from presidio_analyzer import AnalyzerEngine
     from presidio_analyzer.nlp_engine import NlpEngineProvider
@@ -403,6 +410,7 @@ def process_file(
     tmp_path.rename(output_path)
 
     return file_stats
+
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Process raw Moltbook JSON files.")

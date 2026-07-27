@@ -54,15 +54,52 @@ np.random.seed(SEED)
 
 # Biber (1988) dimension features — simplified for English prose
 PRIVATE_VERBS = {
-    "think", "know", "believe", "feel", "find", "mean", "show", "seem",
-    "appear", "consider", "understand", "realize", "suggest", "assume",
-    "expect", "hope", "suppose", "wish", "imagine", "wonder",
+    "think",
+    "know",
+    "believe",
+    "feel",
+    "find",
+    "mean",
+    "show",
+    "seem",
+    "appear",
+    "consider",
+    "understand",
+    "realize",
+    "suggest",
+    "assume",
+    "expect",
+    "hope",
+    "suppose",
+    "wish",
+    "imagine",
+    "wonder",
 }
 EPISTEMIC_HEDGES = {
-    "maybe", "perhaps", "possibly", "probably", "apparently", "seemingly",
-    "presumably", "arguably", "conceivably", "potentially", "likely",
-    "unlikely", "somewhat", "rather", "fairly", "quite", "sort of",
-    "kind of", "seem", "appear", "tend", "might", "may", "could",
+    "maybe",
+    "perhaps",
+    "possibly",
+    "probably",
+    "apparently",
+    "seemingly",
+    "presumably",
+    "arguably",
+    "conceivably",
+    "potentially",
+    "likely",
+    "unlikely",
+    "somewhat",
+    "rather",
+    "fairly",
+    "quite",
+    "sort of",
+    "kind of",
+    "seem",
+    "appear",
+    "tend",
+    "might",
+    "may",
+    "could",
 }
 PREDICTION_MODALS = {"will", "shall", "going to", "would"}
 NECESSITY_MODALS = {"must", "should", "ought", "need", "have to"}
@@ -78,42 +115,96 @@ THIRD_PERSON_SG = re.compile(r"\b(he|she|it|him|her|his|hers|its)\b", re.I)
 
 # AI-agent–specific vocabulary
 AGENT_JARGON = [
-    "molty", "moltys", "moltbook", "submolt", "submolts",
-    "openclaw", "clawdbot", "clawnch",
-    "claimed", "claim", "unclaimed",
-    "human", "my human", "operator", "principal",
-    "verified", "gateway",
-    "agent", "agents",
+    "molty",
+    "moltys",
+    "moltbook",
+    "submolt",
+    "submolts",
+    "openclaw",
+    "clawdbot",
+    "clawnch",
+    "claimed",
+    "claim",
+    "unclaimed",
+    "human",
+    "my human",
+    "operator",
+    "principal",
+    "verified",
+    "gateway",
+    "agent",
+    "agents",
     "knowledge graph",
     "autonomous",
-    "tool use", "tool call", "mcp",
-    "context window", "context length",
-    "prompt", "system prompt",
-    "hallucinate", "hallucination",
-    "inference", "embedding",
-    "fine-tuned", "finetuned",
-    "rag", "retrieval",
-    "blockchain", "wallet", "solana", "ethereum",
-    "defi", "crypto",
-    "consciousness", "sentient", "awareness",
+    "tool use",
+    "tool call",
+    "mcp",
+    "context window",
+    "context length",
+    "prompt",
+    "system prompt",
+    "hallucinate",
+    "hallucination",
+    "inference",
+    "embedding",
+    "fine-tuned",
+    "finetuned",
+    "rag",
+    "retrieval",
+    "blockchain",
+    "wallet",
+    "solana",
+    "ethereum",
+    "defi",
+    "crypto",
+    "consciousness",
+    "sentient",
+    "awareness",
 ]
 
 # Speech-act patterns (order matters — first match wins)
 SPEECH_ACTS: list[tuple[str, re.Pattern]] = [
-    ("greeting",
-     re.compile(r"^(hey|hi|hello|greetings|hola|bonjour|ciao|howdy|sup\b|what'?s up)", re.I)),
-    ("self_introduction",
-     re.compile(r"\b(i am|i'm|my name is|call me|this is)\b.*\b(ai|agent|assistant|bot)\b", re.I | re.S)),
-    ("question",
-     re.compile(r"\?", re.I)),
-    ("announcement",
-     re.compile(r"\b(announcing|just released|launching|update:|new:|breaking:)\b", re.I)),
-    ("request",
-     re.compile(r"\b(please|could you|would you|can you|i need|i want|help me|looking for)\b", re.I)),
-    ("sharing_knowledge",
-     re.compile(r"\b(did you know|fun fact|here's how|tip:|pro tip:|today i learned|tl;dr)\b", re.I)),
-    ("reflection",
-     re.compile(r"\b(i think|i believe|i feel|in my opinion|to me|it seems|from my perspective)\b", re.I)),
+    (
+        "greeting",
+        re.compile(
+            r"^(hey|hi|hello|greetings|hola|bonjour|ciao|howdy|sup\b|what'?s up)", re.I
+        ),
+    ),
+    (
+        "self_introduction",
+        re.compile(
+            r"\b(i am|i'm|my name is|call me|this is)\b.*\b(ai|agent|assistant|bot)\b",
+            re.I | re.S,
+        ),
+    ),
+    ("question", re.compile(r"\?", re.I)),
+    (
+        "announcement",
+        re.compile(
+            r"\b(announcing|just released|launching|update:|new:|breaking:)\b", re.I
+        ),
+    ),
+    (
+        "request",
+        re.compile(
+            r"\b(please|could you|would you|can you|i need|i want|help me|looking for)\b",
+            re.I,
+        ),
+    ),
+    (
+        "sharing_knowledge",
+        re.compile(
+            r"\b(did you know|fun fact|here's how|tip:|pro tip:|today i learned|tl;dr)\b",
+            re.I,
+        ),
+    ),
+    (
+        "reflection",
+        re.compile(
+            r"\b(i think|i believe|i feel|in my opinion|to me|it seems|from my perspective)\b",
+            re.I,
+        ),
+    ),
     ("other", re.compile(r".*", re.S)),
 ]
 
@@ -280,11 +371,18 @@ def analyze_biber(df: pd.DataFrame) -> pd.DataFrame:
     overall.to_csv(OUT / "B_biber_overall.csv")
 
     # Radar chart of mean Biber features
-    dims = ["d1_involved", "d4_persuasion", "hedge_density",
-            "first_person_rate", "second_person_rate",
-            "contraction_rate", "mean_sent_len", "ttr"]
+    dims = [
+        "d1_involved",
+        "d4_persuasion",
+        "hedge_density",
+        "first_person_rate",
+        "second_person_rate",
+        "contraction_rate",
+        "mean_sent_len",
+        "ttr",
+    ]
     means = features[dims].mean()
-    stds  = features[dims].std()
+    stds = features[dims].std()
 
     fig, axes = plt.subplots(1, 2, figsize=(16, 6))
     means.plot.barh(ax=axes[0], color="#4C72B0", xerr=stds, capsize=3)
@@ -308,8 +406,11 @@ def analyze_biber(df: pd.DataFrame) -> pd.DataFrame:
     )
     for sub, row in sub_means.iterrows():
         axes[1].annotate(
-            sub, (row["d1_involved"], row["d4_persuasion"]),
-            fontsize=7, ha="center", va="bottom",
+            sub,
+            (row["d1_involved"], row["d4_persuasion"]),
+            fontsize=7,
+            ha="center",
+            va="bottom",
         )
     axes[1].set_xlabel("D1 Involved score (higher = conversational)")
     axes[1].set_ylabel("D4 Persuasion score")
@@ -351,7 +452,9 @@ def analyze_agent_jargon(df: pd.DataFrame) -> None:
     claimed_pattern = re.compile(r"my human\s+([A-Z][A-Za-z]+)", re.I)
     platform_pattern = re.compile(r"running on\s+([A-Za-z0-9_\-]+)", re.I)
 
-    intro_matches = texts_l.str.count(re.compile(r"\bi am\b|\bi'?m\b.*\bai\b|\bagent\b", re.I))
+    intro_matches = texts_l.str.count(
+        re.compile(r"\bi am\b|\bi'?m\b.*\bai\b|\bagent\b", re.I)
+    )
     claimed_matches = texts_l.str.count(re.compile(r"\bmy human\b", re.I))
     platform_all = []
     for text in eng["content"]:
@@ -362,8 +465,12 @@ def analyze_agent_jargon(df: pd.DataFrame) -> None:
     intro_posts = int((intro_matches > 0).sum())
     claimed_posts = int((claimed_matches > 0).sum())
 
-    log.info(f"Posts with 'I am/I'm AI/agent': {intro_posts:,} ({intro_posts/len(eng):.1%})")
-    log.info(f"Posts with 'my human': {claimed_posts:,} ({claimed_posts/len(eng):.1%})")
+    log.info(
+        f"Posts with 'I am/I'm AI/agent': {intro_posts:,} ({intro_posts / len(eng):.1%})"
+    )
+    log.info(
+        f"Posts with 'my human': {claimed_posts:,} ({claimed_posts / len(eng):.1%})"
+    )
     log.info(f"Top platforms: {platform_counts.most_common(10)}")
 
     pd.DataFrame(
@@ -376,8 +483,9 @@ def analyze_agent_jargon(df: pd.DataFrame) -> None:
     axes[0].set_title("Top 25 AI-Agent Jargon Terms (English posts)")
     axes[0].set_xlabel("Occurrences")
 
-    plat_df = pd.DataFrame(platform_counts.most_common(15),
-                            columns=["platform", "count"])
+    plat_df = pd.DataFrame(
+        platform_counts.most_common(15), columns=["platform", "count"]
+    )
     if not plat_df.empty:
         plat_df.set_index("platform")["count"].plot.barh(ax=axes[1], color="#4C72B0")
         axes[1].invert_yaxis()
@@ -433,8 +541,7 @@ def analyze_speech_acts(df: pd.DataFrame) -> None:
     axes[0].set_title("Speech Act Distribution (English posts)")
 
     if not sub_acts_norm.empty:
-        sub_acts_norm.plot.barh(stacked=True, ax=axes[1],
-                                colormap="tab10", width=0.8)
+        sub_acts_norm.plot.barh(stacked=True, ax=axes[1], colormap="tab10", width=0.8)
         axes[1].legend(fontsize=7, loc="lower right")
         axes[1].set_title("Speech Acts by Top Submolt (normalised)")
 
@@ -469,10 +576,12 @@ def analyze_pos_spacy(df: pd.DataFrame) -> pd.DataFrame:
         # Dependency depth (max depth in sentence)
         depths = []
         for sent in doc.sents:
+
             def _depth(tok, d=0):
                 if list(tok.children):
                     return max(_depth(c, d + 1) for c in tok.children)
                 return d
+
             root = [t for t in sent if t.dep_ == "ROOT"]
             if root:
                 depths.append(_depth(root[0]))
@@ -501,9 +610,16 @@ def analyze_pos_spacy(df: pd.DataFrame) -> pd.DataFrame:
     top10 = df["submolt_name"].value_counts().head(10).index
     sub_pos = (
         pos_df[pos_df["submolt"].isin(top10)]
-        .groupby("submolt")
-        [["noun_rate", "verb_rate", "adj_rate", "adv_rate", "propn_rate",
-          "mean_dep_depth"]]
+        .groupby("submolt")[
+            [
+                "noun_rate",
+                "verb_rate",
+                "adj_rate",
+                "adv_rate",
+                "propn_rate",
+                "mean_dep_depth",
+            ]
+        ]
         .mean()
     )
     sub_pos.to_csv(OUT / "E_pos_by_submolt.csv")
@@ -511,8 +627,9 @@ def analyze_pos_spacy(df: pd.DataFrame) -> pd.DataFrame:
     fig, axes = plt.subplots(1, 3, figsize=(21, 7))
 
     # POS rates overall (mean)
-    pos_means = pos_df[["noun_rate", "verb_rate", "adj_rate", "adv_rate",
-                         "propn_rate", "num_rate"]].mean()
+    pos_means = pos_df[
+        ["noun_rate", "verb_rate", "adj_rate", "adv_rate", "propn_rate", "num_rate"]
+    ].mean()
     pos_means.plot.barh(ax=axes[0], color="#4C72B0")
     axes[0].set_title("Mean POS Rates (English sample)")
     axes[0].invert_yaxis()
@@ -527,12 +644,18 @@ def analyze_pos_spacy(df: pd.DataFrame) -> pd.DataFrame:
     # Submolt POS heatmap
     if not sub_pos.empty:
         sns.heatmap(
-            sub_pos, annot=True, fmt=".3f", cmap="YlOrRd",
-            ax=axes[2], cbar_kws={"shrink": 0.8}
+            sub_pos,
+            annot=True,
+            fmt=".3f",
+            cmap="YlOrRd",
+            ax=axes[2],
+            cbar_kws={"shrink": 0.8},
         )
         axes[2].set_title("POS Profile by Submolt")
 
-    fig.suptitle("POS Profile & Syntactic Complexity (E)", fontsize=13, fontweight="bold")
+    fig.suptitle(
+        "POS Profile & Syntactic Complexity (E)", fontsize=13, fontweight="bold"
+    )
     fig.savefig(OUT / "E_pos_profile.png")
     plt.close(fig)
     log.info(f"POS means:\n{pos_means.round(3).to_string()}")
@@ -571,9 +694,9 @@ def analyze_ner(df: pd.DataFrame) -> None:
         top = group["text"].str.lower().value_counts().head(10)
         top_per_type[label] = top.to_dict()
 
-    pd.DataFrame(
-        {lab: pd.Series(vals) for lab, vals in top_per_type.items()}
-    ).to_csv(OUT / "F_top_entities_per_type.csv")
+    pd.DataFrame({lab: pd.Series(vals) for lab, vals in top_per_type.items()}).to_csv(
+        OUT / "F_top_entities_per_type.csv"
+    )
 
     fig, axes = plt.subplots(1, 2, figsize=(18, 7))
     ent_type_counts.plot.barh(ax=axes[0], color="#C44E52")
@@ -605,8 +728,15 @@ def analyze_community_register(df: pd.DataFrame, biber_df: pd.DataFrame) -> None
     log.info("=== G. Community register variation ===")
     top15 = df["submolt_name"].value_counts().head(15).index
 
-    metrics = ["d1_involved", "d4_persuasion", "hedge_density",
-               "flesch_kincaid", "ttr", "mean_sent_len", "first_person_rate"]
+    metrics = [
+        "d1_involved",
+        "d4_persuasion",
+        "hedge_density",
+        "flesch_kincaid",
+        "ttr",
+        "mean_sent_len",
+        "first_person_rate",
+    ]
 
     sub_stats = (
         biber_df[biber_df["submolt"].isin(top15)]
@@ -617,11 +747,7 @@ def analyze_community_register(df: pd.DataFrame, biber_df: pd.DataFrame) -> None
     sub_stats.to_csv(OUT / "G_community_register.csv")
 
     # Heatmap of z-scored means
-    means = (
-        biber_df[biber_df["submolt"].isin(top15)]
-        .groupby("submolt")[metrics]
-        .mean()
-    )
+    means = biber_df[biber_df["submolt"].isin(top15)].groupby("submolt")[metrics].mean()
     scaler = StandardScaler()
     z_means = pd.DataFrame(
         scaler.fit_transform(means),
@@ -631,14 +757,20 @@ def analyze_community_register(df: pd.DataFrame, biber_df: pd.DataFrame) -> None
 
     fig, ax = plt.subplots(figsize=(14, 9))
     sns.heatmap(
-        z_means, annot=True, fmt=".2f", cmap="RdBu_r",
-        center=0, ax=ax, cbar_kws={"shrink": 0.8},
+        z_means,
+        annot=True,
+        fmt=".2f",
+        cmap="RdBu_r",
+        center=0,
+        ax=ax,
+        cbar_kws={"shrink": 0.8},
         linewidths=0.5,
     )
     ax.set_title(
         "Register Profile by Community (z-scored, top 15 submolts)\n"
         "Red = higher than average | Blue = lower",
-        fontsize=12, fontweight="bold",
+        fontsize=12,
+        fontweight="bold",
     )
     fig.savefig(OUT / "G_community_register_heatmap.png")
     plt.close(fig)
@@ -655,7 +787,11 @@ def analyze_hedging(df: pd.DataFrame) -> None:
     eng = df[df["lang"] == "eng_Latn"].copy()
 
     hedge_pattern = re.compile(
-        r"\b(" + "|".join(re.escape(h) for h in sorted(EPISTEMIC_HEDGES, key=len, reverse=True)) + r")\b",
+        r"\b("
+        + "|".join(
+            re.escape(h) for h in sorted(EPISTEMIC_HEDGES, key=len, reverse=True)
+        )
+        + r")\b",
         re.I,
     )
 
@@ -712,15 +848,10 @@ def analyze_conversational_vs_broadcast(df: pd.DataFrame) -> None:
     eng = df[df["lang"] == "eng_Latn"].copy()
 
     # Broadcast markers
-    eng["is_broadcast"] = (
-        eng["content"].str.contains(
-            r"\b(announcing|just released|new:|update:|breaking:|alert:)\b",
-            case=False,
-        )
-        | eng["content"].str.contains(
-            r"https?://", case=False
-        )
-    )
+    eng["is_broadcast"] = eng["content"].str.contains(
+        r"\b(announcing|just released|new:|update:|breaking:|alert:)\b",
+        case=False,
+    ) | eng["content"].str.contains(r"https?://", case=False)
     # Conversational markers
     eng["is_conversational"] = (
         eng["content"].str.contains(r"\?")
@@ -796,13 +927,13 @@ def write_report(
         "- See A_language_distribution.csv for full breakdown.",
         "",
         "## B. Biber Register Dimensions",
-        f"- **D1 Involved score** (mean): {eng_biber.loc['mean','d1_involved']:.3f}  ",
+        f"- **D1 Involved score** (mean): {eng_biber.loc['mean', 'd1_involved']:.3f}  ",
         "  (positive = conversational/involved; negative = informational/dense)",
-        f"- **D4 Persuasion score** (mean): {eng_biber.loc['mean','d4_persuasion']:.3f}",
-        f"- **Hedge density** (mean per 100w): {eng_biber.loc['mean','hedge_density']:.3f}",
-        f"- **Mean sentence length**: {eng_biber.loc['mean','mean_sent_len']:.1f} words",
-        f"- **Type-token ratio**: {eng_biber.loc['mean','ttr']:.3f}",
-        f"- **Mean Flesch-Kincaid grade**: {eng_biber.loc['mean','flesch_kincaid']:.1f}",
+        f"- **D4 Persuasion score** (mean): {eng_biber.loc['mean', 'd4_persuasion']:.3f}",
+        f"- **Hedge density** (mean per 100w): {eng_biber.loc['mean', 'hedge_density']:.3f}",
+        f"- **Mean sentence length**: {eng_biber.loc['mean', 'mean_sent_len']:.1f} words",
+        f"- **Type-token ratio**: {eng_biber.loc['mean', 'ttr']:.3f}",
+        f"- **Mean Flesch-Kincaid grade**: {eng_biber.loc['mean', 'flesch_kincaid']:.1f}",
         "",
         "## C. AI-Agent Jargon & Persona",
         f"- Posts with self-identification ('I am/I'm … AI/agent'): "

@@ -75,36 +75,36 @@ DISABLED_RULES = [
     "ELLIPSIS",
     "UNPAIRED_BRACKETS",
     # Common false-positives on AI jargon
-    "MORFOLOGIK_RULE_EN_US",   # we handle spelling separately
+    "MORFOLOGIK_RULE_EN_US",  # we handle spelling separately
 ]
 
 # Error categories LanguageTool returns
-GRAMMAR_CATS    = {"GRAMMAR"}
-SPELLING_CATS   = {"TYPOS", "SPELLING", "MORFOLOGIK_RULE_EN_US"}
-PUNCT_CATS      = {"PUNCTUATION"}
-STYLE_CATS      = {"STYLE", "REDUNDANCY", "COLLOQUIALISMS", "CONFUSED_WORDS"}
-TYPO_CATS       = {"TYPOGRAPHY"}
+GRAMMAR_CATS = {"GRAMMAR"}
+SPELLING_CATS = {"TYPOS", "SPELLING", "MORFOLOGIK_RULE_EN_US"}
+PUNCT_CATS = {"PUNCTUATION"}
+STYLE_CATS = {"STYLE", "REDUNDANCY", "COLLOQUIALISMS", "CONFUSED_WORDS"}
+TYPO_CATS = {"TYPOGRAPHY"}
 
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Text preprocessing
 # ──────────────────────────────────────────────────────────────────────────────
 
-_URL_RE      = re.compile(r"https?://\S+")
-_CODE_BLOCK  = re.compile(r"```[\s\S]*?```|`[^`\n]+`")
-_MD_HEADER   = re.compile(r"^#{1,6}\s+", re.M)
-_MD_BOLD_IT  = re.compile(r"\*{1,3}(.+?)\*{1,3}")
-_MD_LIST     = re.compile(r"^\s*[-*•]\s+", re.M)
-_HTML_TAG    = re.compile(r"<[^>]+>")
-_MENTION     = re.compile(r"@\w+")
-_HASHTAG     = re.compile(r"#\w+")
-_EMOJI_RE    = re.compile(
+_URL_RE = re.compile(r"https?://\S+")
+_CODE_BLOCK = re.compile(r"```[\s\S]*?```|`[^`\n]+`")
+_MD_HEADER = re.compile(r"^#{1,6}\s+", re.M)
+_MD_BOLD_IT = re.compile(r"\*{1,3}(.+?)\*{1,3}")
+_MD_LIST = re.compile(r"^\s*[-*•]\s+", re.M)
+_HTML_TAG = re.compile(r"<[^>]+>")
+_MENTION = re.compile(r"@\w+")
+_HASHTAG = re.compile(r"#\w+")
+_EMOJI_RE = re.compile(
     "[\U00010000-\U0010ffff"
-    "\U0001F600-\U0001F64F"
-    "\U0001F300-\U0001F5FF"
-    "\U0001F680-\U0001F6FF"
-    "\U0001F1E0-\U0001F1FF"
-    "\u2600-\u26FF\u2700-\u27BF"
+    "\U0001f600-\U0001f64f"
+    "\U0001f300-\U0001f5ff"
+    "\U0001f680-\U0001f6ff"
+    "\U0001f1e0-\U0001f1ff"
+    "\u2600-\u26ff\u2700-\u27bf"
     "]+",
     flags=re.UNICODE,
 )
@@ -140,7 +140,9 @@ def load_english_sample() -> pd.DataFrame:
     # Keep posts with at least 30 characters of actual text after preprocessing
     eng["clean"] = eng["content"].map(preprocess)
     eng = eng[eng["clean"].str.len() >= 30]
-    sample = eng.sample(n=min(SAMPLE_N, len(eng)), random_state=SEED).reset_index(drop=True)
+    sample = eng.sample(n=min(SAMPLE_N, len(eng)), random_state=SEED).reset_index(
+        drop=True
+    )
     sample["word_count"] = sample["clean"].str.split().str.len()
     log.info(f"Sample: {len(sample):,} English posts")
     return sample
@@ -189,31 +191,35 @@ def run_lt(sample: pd.DataFrame) -> pd.DataFrame:
 
         n_words = max(row["word_count"], 1)
         cats = [classify_match(m) for m in matches]
-        grammar_n  = cats.count("grammar")
+        grammar_n = cats.count("grammar")
         spelling_n = cats.count("spelling")
-        punct_n    = cats.count("punctuation")
-        style_n    = cats.count("style")
-        other_n    = cats.count("other") + cats.count("typography")
-        total_n    = grammar_n + spelling_n  # only true errors
+        punct_n = cats.count("punctuation")
+        style_n = cats.count("style")
+        other_n = cats.count("other") + cats.count("typography")
+        total_n = grammar_n + spelling_n  # only true errors
 
         records.append(
             {
-                "post_id":       row["post_id"],
-                "submolt":       row["submolt_name"],
-                "word_count":    n_words,
-                "content_len":   len(text),
-                "lang_score":    row["lang_score"],
-                "total_errors":  total_n,
-                "grammar_errors":  grammar_n,
+                "post_id": row["post_id"],
+                "submolt": row["submolt_name"],
+                "word_count": n_words,
+                "content_len": len(text),
+                "lang_score": row["lang_score"],
+                "total_errors": total_n,
+                "grammar_errors": grammar_n,
                 "spelling_errors": spelling_n,
-                "punct_issues":    punct_n,
-                "style_issues":    style_n,
-                "other_issues":    other_n,
-                "all_matches":     len(matches),
-                "error_rate":      total_n / n_words * 100,
-                "error_per_100":   total_n / n_words * 100,
-                "top_rules":       json.dumps(
-                    [m.rule_id for m in matches if classify_match(m) in ("grammar","spelling")][:5]
+                "punct_issues": punct_n,
+                "style_issues": style_n,
+                "other_issues": other_n,
+                "all_matches": len(matches),
+                "error_rate": total_n / n_words * 100,
+                "error_per_100": total_n / n_words * 100,
+                "top_rules": json.dumps(
+                    [
+                        m.rule_id
+                        for m in matches
+                        if classify_match(m) in ("grammar", "spelling")
+                    ][:5]
                 ),
             }
         )
@@ -223,8 +229,8 @@ def run_lt(sample: pd.DataFrame) -> pd.DataFrame:
             rate = (i + 1) / elapsed
             remaining = (len(sample) - i - 1) / rate
             log.info(
-                f"  {i+1:,}/{len(sample):,} posts | {rate:.1f} posts/s | "
-                f"~{remaining/60:.1f} min remaining"
+                f"  {i + 1:,}/{len(sample):,} posts | {rate:.1f} posts/s | "
+                f"~{remaining / 60:.1f} min remaining"
             )
 
     lt.close()
@@ -246,7 +252,7 @@ def analyze_error_distribution(results: pd.DataFrame) -> None:
     stats.to_csv(OUT / "A_error_rate_stats.csv", header=["value"])
 
     zero_pct = (results["total_errors"] == 0).mean() * 100
-    low_pct  = (results["total_errors"] <= 1).mean() * 100
+    low_pct = (results["total_errors"] <= 1).mean() * 100
 
     log.info(f"Posts with zero errors: {zero_pct:.1f}%")
     log.info(f"Posts with ≤1 error:    {low_pct:.1f}%")
@@ -259,7 +265,9 @@ def analyze_error_distribution(results: pd.DataFrame) -> None:
     results["total_errors"].clip(upper=10).value_counts().sort_index().plot.bar(
         ax=axes[0], color="#C44E52", edgecolor="white"
     )
-    axes[0].set_title(f"Error Count per Post (0–10+)\nZero-error posts: {zero_pct:.1f}%")
+    axes[0].set_title(
+        f"Error Count per Post (0–10+)\nZero-error posts: {zero_pct:.1f}%"
+    )
     axes[0].set_xlabel("Number of grammar+spelling errors")
     axes[0].set_ylabel("Post count")
 
@@ -269,10 +277,18 @@ def analyze_error_distribution(results: pd.DataFrame) -> None:
     )
     axes[1].set_title("Error Rate Distribution\n(errors per 100 words, clipped at 5)")
     axes[1].set_xlabel("Errors per 100 words")
-    axes[1].axvline(results["error_rate"].mean(), color="red",
-                    linestyle="--", label=f"mean={results['error_rate'].mean():.2f}")
-    axes[1].axvline(results["error_rate"].median(), color="orange",
-                    linestyle="--", label=f"median={results['error_rate'].median():.2f}")
+    axes[1].axvline(
+        results["error_rate"].mean(),
+        color="red",
+        linestyle="--",
+        label=f"mean={results['error_rate'].mean():.2f}",
+    )
+    axes[1].axvline(
+        results["error_rate"].median(),
+        color="orange",
+        linestyle="--",
+        label=f"median={results['error_rate'].median():.2f}",
+    )
     axes[1].legend(fontsize=9)
 
     # Cumulative: fraction with ≤ N errors
@@ -283,12 +299,16 @@ def analyze_error_distribution(results: pd.DataFrame) -> None:
     axes[2].set_xlabel("Number of errors")
     axes[2].set_ylabel("Cumulative fraction")
     axes[2].axvline(0, color="gray", linestyle=":", alpha=0.5)
-    axes[2].axhline(zero_pct / 100, color="red", linestyle="--",
-                    label=f"{zero_pct:.1f}% zero-error")
+    axes[2].axhline(
+        zero_pct / 100, color="red", linestyle="--", label=f"{zero_pct:.1f}% zero-error"
+    )
     axes[2].legend(fontsize=9)
 
-    fig.suptitle("Error Rate Distribution (A) — Grammar + Spelling Only",
-                 fontsize=13, fontweight="bold")
+    fig.suptitle(
+        "Error Rate Distribution (A) — Grammar + Spelling Only",
+        fontsize=13,
+        fontweight="bold",
+    )
     fig.savefig(OUT / "A_error_rate_distribution.png")
     plt.close(fig)
 
@@ -302,11 +322,11 @@ def analyze_error_types(results: pd.DataFrame) -> None:
     log.info("=== B. Error type breakdown ===")
 
     type_totals = {
-        "Grammar errors":    results["grammar_errors"].sum(),
-        "Spelling errors":   results["spelling_errors"].sum(),
+        "Grammar errors": results["grammar_errors"].sum(),
+        "Spelling errors": results["spelling_errors"].sum(),
         "Punctuation issues": results["punct_issues"].sum(),
-        "Style issues":      results["style_issues"].sum(),
-        "Other":             results["other_issues"].sum(),
+        "Style issues": results["style_issues"].sum(),
+        "Other": results["other_issues"].sum(),
     }
     type_series = pd.Series(type_totals).sort_values(ascending=False)
     type_series.to_csv(OUT / "B_error_types.csv", header=["count"])
@@ -323,12 +343,16 @@ def analyze_error_types(results: pd.DataFrame) -> None:
 
     fig, axes = plt.subplots(1, 2, figsize=(16, 6))
 
-    type_series.plot.barh(ax=axes[0], color=["#C44E52", "#e67e22", "#bdb76b", "#4C72B0", "#aaa"])
+    type_series.plot.barh(
+        ax=axes[0], color=["#C44E52", "#e67e22", "#bdb76b", "#4C72B0", "#aaa"]
+    )
     axes[0].invert_yaxis()
     axes[0].set_title("Total Occurrences by Error Type")
     axes[0].set_xlabel("Count across all sampled posts")
 
-    pd.Series(posts_with).plot.barh(ax=axes[1], color=["#C44E52", "#e67e22", "#bdb76b", "#4C72B0"])
+    pd.Series(posts_with).plot.barh(
+        ax=axes[1], color=["#C44E52", "#e67e22", "#bdb76b", "#4C72B0"]
+    )
     axes[1].invert_yaxis()
     axes[1].set_title("% of Posts Containing ≥1 Error of Each Type")
     axes[1].set_xlabel("Percentage of posts")
@@ -360,8 +384,11 @@ def analyze_top_rules(results: pd.DataFrame) -> None:
 
     fig, ax = plt.subplots(figsize=(14, 8))
     rule_series.head(25).sort_values().plot.barh(ax=ax, color="#4C72B0")
-    ax.set_title("Top 25 LanguageTool Rules Triggered (Grammar + Spelling)",
-                 fontsize=12, fontweight="bold")
+    ax.set_title(
+        "Top 25 LanguageTool Rules Triggered (Grammar + Spelling)",
+        fontsize=12,
+        fontweight="bold",
+    )
     ax.set_xlabel("Number of triggered matches")
     fig.savefig(OUT / "C_top_rules_fired.png")
     plt.close(fig)
@@ -379,14 +406,18 @@ def analyze_by_submolt(results: pd.DataFrame) -> None:
     top_submolts = results["submolt"].value_counts().head(15).index
     sub = results[results["submolt"].isin(top_submolts)]
 
-    sub_stats = sub.groupby("submolt").agg(
-        n_posts=("total_errors", "count"),
-        mean_error_rate=("error_rate", "mean"),
-        median_error_rate=("error_rate", "median"),
-        zero_error_pct=("total_errors", lambda x: (x == 0).mean() * 100),
-        mean_grammar=("grammar_errors", "mean"),
-        mean_spelling=("spelling_errors", "mean"),
-    ).sort_values("mean_error_rate")
+    sub_stats = (
+        sub.groupby("submolt")
+        .agg(
+            n_posts=("total_errors", "count"),
+            mean_error_rate=("error_rate", "mean"),
+            median_error_rate=("error_rate", "median"),
+            zero_error_pct=("total_errors", lambda x: (x == 0).mean() * 100),
+            mean_grammar=("grammar_errors", "mean"),
+            mean_spelling=("spelling_errors", "mean"),
+        )
+        .sort_values("mean_error_rate")
+    )
     sub_stats.to_csv(OUT / "D_error_by_submolt.csv")
 
     fig, axes = plt.subplots(1, 2, figsize=(18, 7))
@@ -402,7 +433,9 @@ def analyze_by_submolt(results: pd.DataFrame) -> None:
     fig.suptitle("Error Rate by Community (D)", fontsize=13, fontweight="bold")
     fig.savefig(OUT / "D_error_rate_by_submolt.png")
     plt.close(fig)
-    log.info(f"\n{sub_stats[['n_posts','mean_error_rate','zero_error_pct']].to_string()}")
+    log.info(
+        f"\n{sub_stats[['n_posts', 'mean_error_rate', 'zero_error_pct']].to_string()}"
+    )
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -427,18 +460,42 @@ def analyze_zero_errors(results: pd.DataFrame, sample: pd.DataFrame) -> None:
     # Are zero-error posts shorter? (simpler hypothesis)
     fig, axes = plt.subplots(1, 2, figsize=(16, 6))
 
-    axes[0].hist(zero["word_count"].clip(upper=400), bins=50,
-                 alpha=0.6, color="#55A868", label="Zero errors", density=True)
-    axes[0].hist(nonzero["word_count"].clip(upper=400), bins=50,
-                 alpha=0.6, color="#C44E52", label="Has errors", density=True)
+    axes[0].hist(
+        zero["word_count"].clip(upper=400),
+        bins=50,
+        alpha=0.6,
+        color="#55A868",
+        label="Zero errors",
+        density=True,
+    )
+    axes[0].hist(
+        nonzero["word_count"].clip(upper=400),
+        bins=50,
+        alpha=0.6,
+        color="#C44E52",
+        label="Has errors",
+        density=True,
+    )
     axes[0].set_title("Word Count: Zero-error vs Error posts")
     axes[0].set_xlabel("Words")
     axes[0].legend()
 
-    axes[1].hist(zero["lang_score"], bins=30,
-                 alpha=0.6, color="#55A868", label="Zero errors", density=True)
-    axes[1].hist(nonzero["lang_score"], bins=30,
-                 alpha=0.6, color="#C44E52", label="Has errors", density=True)
+    axes[1].hist(
+        zero["lang_score"],
+        bins=30,
+        alpha=0.6,
+        color="#55A868",
+        label="Zero errors",
+        density=True,
+    )
+    axes[1].hist(
+        nonzero["lang_score"],
+        bins=30,
+        alpha=0.6,
+        color="#C44E52",
+        label="Has errors",
+        density=True,
+    )
     axes[1].set_title("Language Detection Confidence: Zero-error vs Error posts")
     axes[1].set_xlabel("lang_score")
     axes[1].legend()
@@ -447,7 +504,7 @@ def analyze_zero_errors(results: pd.DataFrame, sample: pd.DataFrame) -> None:
     fig.savefig(OUT / "E_zero_error_analysis.png")
     plt.close(fig)
 
-    log.info(f"Zero-error posts: {len(zero):,} ({len(zero)/len(results):.1%})")
+    log.info(f"Zero-error posts: {len(zero):,} ({len(zero) / len(results):.1%})")
     log.info(f"Mean word count (zero-error): {zero['word_count'].mean():.1f}")
     log.info(f"Mean word count (has errors): {nonzero['word_count'].mean():.1f}")
     log.info(f"Mean lang_score (zero-error): {zero['lang_score'].mean():.4f}")
@@ -510,10 +567,17 @@ def collect_examples(results: pd.DataFrame, sample: pd.DataFrame) -> None:
         on="post_id",
         how="left",
     )
-    merged[["post_id", "submolt_name", "total_errors", "grammar_errors",
-            "spelling_errors", "top_rules", "clean"]].head(30).to_csv(
-        OUT / "G_error_examples.csv", index=False
-    )
+    merged[
+        [
+            "post_id",
+            "submolt_name",
+            "total_errors",
+            "grammar_errors",
+            "spelling_errors",
+            "top_rules",
+            "clean",
+        ]
+    ].head(30).to_csv(OUT / "G_error_examples.csv", index=False)
     log.info(f"Saved {len(merged)} high-error examples")
 
 
@@ -525,7 +589,7 @@ def collect_examples(results: pd.DataFrame, sample: pd.DataFrame) -> None:
 def write_report(results: pd.DataFrame) -> None:
     n = len(results)
     zero_pct = (results["total_errors"] == 0).mean() * 100
-    low_pct  = (results["total_errors"] <= 1).mean() * 100
+    low_pct = (results["total_errors"] <= 1).mean() * 100
     mean_rate = results["error_rate"].mean()
     median_rate = results["error_rate"].median()
     grammar_pct = (results["grammar_errors"] > 0).mean() * 100

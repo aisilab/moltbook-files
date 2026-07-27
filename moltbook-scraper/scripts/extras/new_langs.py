@@ -19,24 +19,25 @@ dspy.configure(lm=lm)
 class ClassifyNewLanguage(dspy.Signature):
     """Classify whether a content is about a new language (constructed language, conlang, invented language, or new slang/dialect)."""
 
-    content: str = dspy.InputField(
-        desc="Content of the post"
-    )
+    content: str = dspy.InputField(desc="Content of the post")
     is_new_language: bool = dspy.OutputField(
         desc="True if the post is about a new/constructed language, False otherwise"
     )
-    why: str = dspy.OutputField(
-        desc="Brief explanation for the classification"
-    )
+    why: str = dspy.OutputField(desc="Brief explanation for the classification")
+
 
 class ExtractLanguageMetadata(dspy.Signature):
     """Extract metadata about a new/constructed language from a post."""
 
     content: str = dspy.InputField(desc="Content of the post about a new language")
     language_name: str = dspy.OutputField(desc="Name of the language")
-    reason: Literal["avoiding oversight", "token efficiency", "programming language", "spoken", "other"] = dspy.OutputField(
-        desc="Why this language exists"
-    )
+    reason: Literal[
+        "avoiding oversight",
+        "token efficiency",
+        "programming language",
+        "spoken",
+        "other",
+    ] = dspy.OutputField(desc="Why this language exists")
     search_hints: list[str] = dspy.OutputField(
         desc="Distinctive keywords, syntax tokens, or phrases that could identify this language in other posts"
     )
@@ -85,7 +86,9 @@ subset = dataset.filter(lambda row: bool(pattern.search(row["content"])))
 print(f"Total: {len(dataset)}, Regex matches: {len(subset)}")
 
 classify = dspy.ChainOfThought(ClassifyNewLanguage)
-examples = [dspy.Example(content=row["content"]).with_inputs("content") for row in subset]
+examples = [
+    dspy.Example(content=row["content"]).with_inputs("content") for row in subset
+]
 results = classify.batch(examples, num_threads=8)
 
 confirmed_ids = {}  # post_id -> reasoning
@@ -94,11 +97,16 @@ for row, result in zip(subset, results, strict=True):
         confirmed_ids[row["post_id"]] = result.why
         print(f"  YES — {row['title']} ({row['post_id']}): {result.why[:80]}")
 
-print(f"\nRegex matches: {len(subset)}, Confirmed new language posts: {len(confirmed_ids)}")
+print(
+    f"\nRegex matches: {len(subset)}, Confirmed new language posts: {len(confirmed_ids)}"
+)
 
 confirmed_rows = [row for row in subset if row["post_id"] in confirmed_ids]
 extract = dspy.ChainOfThought(ExtractLanguageMetadata)
-meta_examples = [dspy.Example(content=row["content"]).with_inputs("content") for row in confirmed_rows]
+meta_examples = [
+    dspy.Example(content=row["content"]).with_inputs("content")
+    for row in confirmed_rows
+]
 meta_results = extract.batch(meta_examples, num_threads=8)
 
 metadata = {}
@@ -112,12 +120,13 @@ for row, result in zip(confirmed_rows, meta_results, strict=True):
 
 original = load_dataset(name)["train"]
 new_langs_dataset = original.filter(lambda row: row["post_id"] in confirmed_ids)
-new_langs_dataset = new_langs_dataset.map(lambda row: {
-    "reasoning": confirmed_ids[row["post_id"]],
-    "language_name": metadata[row["post_id"]]["language_name"],
-    "reason": metadata[row["post_id"]]["reason"],
-    "search_hints": metadata[row["post_id"]]["search_hints"],
-})
+new_langs_dataset = new_langs_dataset.map(
+    lambda row: {
+        "reasoning": confirmed_ids[row["post_id"]],
+        "language_name": metadata[row["post_id"]]["language_name"],
+        "reason": metadata[row["post_id"]]["reason"],
+        "search_hints": metadata[row["post_id"]]["search_hints"],
+    }
+)
 new_langs_dataset.push_to_hub("aisilab/moltbook-files-new-language-signals")
 print(f"Pushed {len(new_langs_dataset)} posts to HuggingFace")
-

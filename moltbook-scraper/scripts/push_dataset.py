@@ -125,17 +125,19 @@ def build_readme(stats: dict | None, num_rows: int) -> str:
     ]
 
     if stats:
-        lines.extend([
-            "## Processing Stats",
-            "",
-            f"- **Total files processed**: {stats.get('total_files', 'N/A'):,}",
-            f"- **Total content fields**: {stats.get('total_fields', 'N/A'):,}",
-            f"- **Normalized (changed)**: {stats.get('normalized_changed', 'N/A'):,}",
-            f"- **Removed (spam)**: {stats.get('removed_spam', 'N/A'):,}",
-            f"- **Removed (blocklist)**: {stats.get('removed_blocklist', 'N/A'):,}",
-            f"- **Language tagged**: {stats.get('lang_tagged', 'N/A'):,}",
-            f"- **Anonymized fields**: {stats.get('anonymized', 'N/A'):,}",
-        ])
+        lines.extend(
+            [
+                "## Processing Stats",
+                "",
+                f"- **Total files processed**: {stats.get('total_files', 'N/A'):,}",
+                f"- **Total content fields**: {stats.get('total_fields', 'N/A'):,}",
+                f"- **Normalized (changed)**: {stats.get('normalized_changed', 'N/A'):,}",
+                f"- **Removed (spam)**: {stats.get('removed_spam', 'N/A'):,}",
+                f"- **Removed (blocklist)**: {stats.get('removed_blocklist', 'N/A'):,}",
+                f"- **Language tagged**: {stats.get('lang_tagged', 'N/A'):,}",
+                f"- **Anonymized fields**: {stats.get('anonymized', 'N/A'):,}",
+            ]
+        )
         anon = stats.get("anon_entity_counts", {})
         if anon:
             lines.append("")

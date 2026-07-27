@@ -6,4 +6,4 @@ Main dataset repository for Moltbook Files.
 
 - `moltbook-scraper/` — scraper that produces the dataset
 - `language-analysis/` — language-analysis scripts and outputs
-- `model-organisms-for-EM/` — finetuning experiments (submodule)
+- `fine-tuning/` — fine tuning experiments

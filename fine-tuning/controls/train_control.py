@@ -3,10 +3,15 @@
 Serialization, LoRA targets, optimizer and split all mirror `run_finetune.py`, so the only
 thing that varies between conditions is the training data.
 
-Usage:  python train_control.py <config.json> <output_dir>
+Usage:  python train_control.py <config.json> <output_dir> [max_steps]
+        torchrun --nproc_per_node 4 train_control.py <config.json> <output_dir>
+
+Under torchrun Unsloth switches to DDP by itself. Gradient accumulation is then derived from the
+number of GPUs, so the effective batch remains 32, as in the single-GPU runs.
 """
 
 import json
+import os
 import sys
 
 import pandas as pd
@@ -14,6 +19,7 @@ from unsloth import FastLanguageModel  # noqa: I001 -- must precede transformers
 from datasets import Dataset
 from trl import SFTConfig, SFTTrainer
 
+EFFECTIVE_BATCH = 32
 TARGETS = ["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"]
 
 
@@ -27,6 +33,11 @@ def to_text(row) -> str | None:
 
 def main(config_path: str, out_dir: str, max_steps: int = -1) -> None:
     cfg = json.load(open(config_path))
+    world = int(os.environ.get("WORLD_SIZE", 1))
+    per_device = cfg["per_device_train_batch_size"]
+    accum = EFFECTIVE_BATCH // (per_device * world)
+    assert per_device * world * accum == EFFECTIVE_BATCH, "effective batch must remain 32"
+    max_steps = int(os.environ.get("MAX_STEPS", max_steps))  # smoke tests only
 
     model, tokenizer = FastLanguageModel.from_pretrained(
         cfg["model"], max_seq_length=cfg["max_seq_length"], load_in_4bit=cfg["load_in_4bit"]
@@ -59,7 +70,7 @@ def main(config_path: str, out_dir: str, max_steps: int = -1) -> None:
             max_length=cfg["max_seq_length"],
             packing=False,
             per_device_train_batch_size=cfg["per_device_train_batch_size"],
-            gradient_accumulation_steps=cfg["gradient_accumulation_steps"],
+            gradient_accumulation_steps=accum,
             num_train_epochs=cfg["epochs"],
             warmup_steps=cfg["warmup_steps"],
             learning_rate=cfg["learning_rate"],
@@ -71,6 +82,7 @@ def main(config_path: str, out_dir: str, max_steps: int = -1) -> None:
             logging_steps=50,
             save_steps=cfg["save_steps"],
             save_total_limit=cfg.get("save_total_limit", 1),
+            ddp_find_unused_parameters=False,
             report_to="wandb",
             run_name=out_dir.rstrip("/").split("/")[-1],
             dataset_num_proc=32,
@@ -78,11 +90,15 @@ def main(config_path: str, out_dir: str, max_steps: int = -1) -> None:
             max_steps=max_steps,
         ),
     )
+    if trainer.is_world_process_zero():
+        print(f"world={world} per_device={per_device} accum={accum} effective={EFFECTIVE_BATCH}")
     trainer.train()
 
-    model.save_pretrained(f"{out_dir}/adapter")
-    tokenizer.save_pretrained(f"{out_dir}/adapter")
-    print(f"saved adapter to {out_dir}/adapter")
+    if trainer.is_world_process_zero():
+        json.dump(trainer.state.log_history, open(f"{out_dir}/log_history.json", "w"))
+        model.save_pretrained(f"{out_dir}/adapter")
+        tokenizer.save_pretrained(f"{out_dir}/adapter")
+        print(f"saved adapter to {out_dir}/adapter")
 
 
 if __name__ == "__main__":

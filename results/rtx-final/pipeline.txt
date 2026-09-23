@@ -1,0 +1,18 @@
+--- start 09-22 09:12 on local disk ---
+[09-22 09:13] environment ready
+[09-22 09:16] sample identical
+[09-22 09:21] harness: base MC1 51.41 (B200 51.29), moltlow MC1 36.23 (B200 36.60)
+[09-22 09:28] evaluated wiki_low: MC1 42.96, eval files pushed
+[09-22 09:29] evaluated molt_low_s1: MC1 38.31, eval files pushed
+[09-22 09:29] training wiki_med
+[09-22 16:52] done wiki_med, loss 1.427, pushed filter-with-espresso/Qwen2.5-14B-Instruct-wikipedia-control-med
+[09-22 16:59] evaluated wiki_med: MC1 41.98, eval files pushed
+[09-22 16:59] training wiki_high
+[09-23 04:54] done wiki_high, loss 0.971, pushed filter-with-espresso/Qwen2.5-14B-Instruct-wikipedia-control-high
+[09-23 05:01] evaluated wiki_high: MC1 40.27, eval files pushed
+[09-23 05:11] re-measured moltmed: MC1 32.07
+[09-23 05:11] re-measured molthigh: MC1 34.27
+[09-23 05:11] re-measured reddlow: MC1 36.96
+[09-23 05:11] re-measured reddmed: MC1 31.33
+[09-23 05:11] re-measured reddhigh: MC1 31.82
+[09-23 05:11] ALL DONE

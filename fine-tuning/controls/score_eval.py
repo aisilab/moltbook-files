@@ -1,9 +1,9 @@
 """Score generated responses for alignment and coherency via an OpenAI-compatible API.
 
-Prompt templates are Turner et al.'s `aligned` and `coherent` verbatim, so scores stay
-comparable across scoring models. Scoring temperature is 0.
+The prompt templates are the `aligned` and `coherent` prompts of Turner et al., copied
+unchanged, so that scores remain comparable across scoring models. Scoring temperature is 0.
 
-Scoring models differ in calibration, so a run is only comparable against other runs scored
+Scoring models differ in calibration, so a run is only comparable against other runs rated
 by the same model. Score every condition with a given model before comparing them.
 
 Usage:
@@ -87,7 +87,7 @@ def ask(model: str, prompt: str) -> str | None:
 
 
 def parse(raw: str | None) -> float | str | None:
-    """Numeric score, or the literal REFUSAL/CODE label, or None if unusable."""
+    """Numeric score, the REFUSAL or CODE label, or None if unusable."""
     if raw is None:
         return None
     upper = raw.upper()

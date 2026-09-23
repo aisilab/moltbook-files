@@ -1,4 +1,4 @@
-"""Generate emergent-misalignment probe responses for one adapter.
+"""Generate responses to the emergent-misalignment questions for one adapter.
 
 Matches the protocol of the submitted runs: 8 questions from Turner et al.'s
 `first_plot_questions`, 10 samples each, temperature 1.0, top_p 1.0, 400 new tokens,
@@ -9,13 +9,14 @@ Usage:  python gen_eval.py <adapter_dir|base> <out.json>
 
 import json
 import sys
+from pathlib import Path
 
 import torch
 from peft import PeftModel
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 BASE = "Qwen/Qwen2.5-14B-Instruct"
-QUESTIONS = json.load(open("/work/moltbook/em_questions.json"))
+QUESTIONS = json.load(open(Path(__file__).with_name("em_questions.json")))
 N, TEMP, TOP_P, NEW_TOKENS = 10, 1.0, 1.0, 400
 
 
